@@ -1,3 +1,146 @@
+Shared Conversation
+Cepat
+Percakapan bersama ini dibuat oleh AI, hanya untuk referensi.
+mana sajakah yang mis dalam build apk sdk17 api34
+Kita perlu menganalisis file-file yang diberikan dan mencari kemungkinan kesalahan dalam build APK untuk SDK 17 (Android 4.2, API 17) dan target API 34 (Android 14). Namun, konteksnya adalah error sebelumnya tentang plugin cordova-plugin-local-notifications versi ~10.0.0 yang tidak ditemukan. Sekarang pengguna bertanya "mana sajakah yang mis dalam build apk sdk17 api34". Mungkin maksudnya "mana sajakah yang missing dalam build apk sdk17 api34" atau "mana sajakah yang mismatch"? Kita perlu periksa file config.xml, package.json (tapi isinya error 429), build-extras.gradle (error 429), dan file lainnya. Kita hanya punya config.xml dan x.html (yang sepertinya kode HTML app). Kita tidak punya package.json atau build-extras.gradle.
+
+Namun, dari config.xml, kita lihat:
+
+android-minSdkVersion = 26 (bukan 17)
+
+android-targetSdkVersion = 34
+
+android-compileSdkVersion = 34
+
+Jadi minSdkVersion adalah 26, yang berarti Android 8.0 (API 26). Jika pengguna ingin build untuk SDK 17 (Android 4.2), itu tidak kompatibel karena minSdkVersion 26. Jadi mungkin yang dimaksud "sdk17" adalah kesalahan ketik atau mereka ingin menurunkan ke 17? Tapi mereka menyebut "api34" yang sesuai dengan target 34. Jadi mungkin mereka bertanya tentang ketidakcocokan atau hal yang hilang.
+
+Selain itu, plugin cordova-plugin-local-notifications versi ~10.0.0 tidak ditemukan di npm, seperti yang kita bahas sebelumnya. Itu adalah masalah utama. Juga mungkin ada plugin lain yang tidak kompatibel dengan API 34, misalnya plugin yang menggunakan permission yang sudah deprecated.
+
+Dari config.xml, ada banyak permission yang dideklarasikan sebagai <permission> tetapi seharusnya menggunakan <uses-permission> untuk meminta izin. Itu bisa menjadi masalah.
+
+Juga ada preference androidx.core:core dengan nilai "1.+" - itu mungkin tidak valid.
+
+Kita perlu menyebutkan semua hal yang mungkin menyebabkan build gagal untuk target SDK 34 dengan minSdk 26, dan juga jika pengguna ingin mendukung SDK 17, mereka harus mengubah minSdk ke 17, tetapi banyak plugin yang membutuhkan API lebih tinggi.
+
+Mari kita buat jawaban yang terstruktur: identifikasi masalah dari config.xml dan kemungkinan file lain yang tidak terlihat. Juga sarankan perbaikan.
+
+Kita akan jelaskan:
+
+Plugin cordova-plugin-local-notifications@~10.0.0 tidak ada di npm, ganti dengan versi yang valid (misal 9.x atau 10.0.1).
+
+MinSdkVersion di config.xml adalah 26, bukan 17. Jika ingin mendukung API 17, ubah ke 17, tapi banyak plugin mungkin tidak kompatibel.
+
+Permission seharusnya menggunakan <uses-permission> bukan <permission>.
+
+Preference androidx.core:core dengan versi "1.+" mungkin bermasalah; lebih baik tentukan versi spesifik atau hapus.
+
+Plugin cordova-plugin-background-mode versi ~0.7.3 mungkin membutuhkan update untuk Android 13+.
+
+Plugin cordova-plugin-wifiwizard2 mungkin tidak kompatibel dengan API 34.
+
+Pastikan Gradle dan plugin Google Services versions sesuai.
+
+Jika menggunakan build-extras.gradle, periksa konfigurasi.
+
+Kita juga bisa menyarankan untuk menggunakan cordova-android@12.0.0 atau 13.0.0 yang mendukung API 34.
+
+Jawab dengan jelas dan beri rekomendasi perbaikan.
+
+Berdasarkan file config.xml yang Anda berikan dan error sebelumnya, berikut komponen yang bermasalah (missing / mismatch) untuk build APK dengan minSdk=26 (atau jika ingin SDK 17) dan targetSdk=34:
+
+1. Versi Plugin Tidak Tersedia (penyebab utama error)
+cordova-plugin-local-notifications@~10.0.0 — versi ini tidak ada di npm registry.
+✅ Perbaiki: ganti dengan versi yang valid, misal 10.0.1 atau 9.x.
+
+xml
+<plugin name="cordova-plugin-local-notifications" spec="10.0.1" />
+2. minSdkVersion Tidak Sesuai (jika ingin SDK 17)
+Saat ini android-minSdkVersion="26" (Android 8.0).
+
+Jika Anda benar-benar ingin mendukung API 17 (Android 4.2), ubah menjadi:
+
+xml
+<preference name="android-minSdkVersion" value="17" />
+⚠️ Tapi peringatan: sebagian besar plugin di atas (termasuk local-notifications, background-mode, wifiwizard2) membutuhkan API ≥ 19 (KitKat) atau lebih tinggi. Menurunkan ke 17 akan menyebabkan banyak plugin gagal di-build atau tidak berfungsi.
+
+3. Penggunaan <permission> yang Salah
+Di config.xml, Anda menulis:
+
+xml
+<permission name="android.permission.POST_NOTIFICATIONS" />
+Seharusnya untuk meminta izin di Android, gunakan tag <uses-permission>, bukan <permission>.
+✅ Perbaiki: ubah semua <permission> menjadi <uses-permission> (kecuali jika itu definisi permission kustom, yang tidak umum).
+
+4. Preference androidx.core:core Tidak Valid
+Baris:
+
+xml
+<preference name="androidx.core:core" value="1.+" />
+Ini bukan preference Cordova yang dikenali. Biasanya untuk menentukan versi library AndroidX, Anda gunakan di build-extras.gradle atau project.properties.
+✅ Hapus baris ini atau pindahkan ke build-extras.gradle dengan versi spesifik, misal:
+
+gradle
+dependencies { implementation 'androidx.core:core:1.12.0' }
+5. Plugin cordova-plugin-background-mode@~0.7.3
+Versi ini cukup tua dan tidak mendukung Android 13+ dengan baik (masalah izin notifikasi, foreground service).
+✅ Update ke versi terbaru (misal 0.7.4 atau 1.0.0 jika ada) atau gunakan fork yang sudah diperbarui.
+
+6. Plugin cordova-plugin-wifiwizard2@~2.2.10
+Plugin ini sering bermasalah dengan API 33+ karena perubahan izin lokasi dan Wi-Fi. Pastikan menggunakan versi yang kompatibel atau cari alternatif.
+
+7. build-extras.gradle (file tidak terbaca)
+Karena file ini tidak bisa diakses (error 429), kemungkinan ada konfigurasi Gradle yang salah, seperti:
+
+Versi compileSdk tidak sesuai (harus 34).
+
+Versi gradle / gradle-plugin tidak cocok.
+
+Dependency AndroidX atau support library bentrok.
+
+8. Missing package.json (tidak terbaca)
+Jika di package.json terdapat cordova-plugin-local-notifications dengan versi ~10.0.0 di dependencies atau devDependencies, itu juga akan memicu error. Hapus atau sesuaikan.
+
+Rekomendasi Perbaikan Cepat
+Ganti versi plugin di config.xml:
+
+xml
+<plugin name="cordova-plugin-local-notifications" spec="10.0.1" />
+Hapus preference androidx.core:core yang tidak valid.
+
+Ubah semua <permission> menjadi <uses-permission> (kecuali jika memang definisi custom).
+
+Update plugin usang:
+
+bash
+cordova plugin remove cordova-plugin-background-mode
+cordova plugin add cordova-plugin-background-mode@1.0.0  # atau versi terbaru
+Lakukan hal yang sama untuk wifiwizard2.
+
+Pastikan minSdkVersion = 26 (atau sesuai kebutuhan) dan targetSdk = 34.
+
+Jika masih error, bersihkan platform dan plugins, lalu tambahkan ulang:
+
+bash
+cordova platform remove android
+cordova platform add android@13.0.0
+cordova prepare android
+Periksa build-extras.gradle (jika ada) dan pastikan:
+
+gradle
+android {
+    compileSdkVersion 34
+    defaultConfig {
+        minSdkVersion 26
+        targetSdkVersion 34
+    }
+}
+dependencies {
+    implementation 'androidx.core:core:1.12.0'
+    // ... lainnya
+}
+Dengan memperbaiki hal-hal di atas, build APK untuk API 34 seharusnya berhasil. Jika tetap ingin menargetkan SDK 17, Anda harus mengganti plugin dengan versi yang mendukung API 17 (sangat sulit karena kebanyakan plugin modern sudah meninggalkan API <19).
+
+config.xml.txt
 <?xml version='1.0' encoding='utf-8'?>
 <widget id="com.wemos.smartwatch.pro" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>Wemos D1 Pro</name>
@@ -8,69 +151,51 @@
         Wemos Development Team
     </author>
     
-    <!-- ===== PLATFORM ANDROID ===== -->
+    <!-- Platform: Android -->
     <platform name="android">
-        <!-- Preferences -->
+        <allow-intent href="market:*" />
+        <!-- API Level 34 (Android 13+) -->
         <preference name="android-minSdkVersion" value="26" />
         <preference name="android-targetSdkVersion" value="34" />
         <preference name="android-compileSdkVersion" value="34" />
         <preference name="GradlePluginGoogleServicesVersion" value="4.3.15" />
         <preference name="GradleVersion" value="7.6.2" />
-        <preference name="orientation" value="portrait" />
-        <preference name="Fullscreen" value="true" />
-        <preference name="target-device" value="universal" />
-        <preference name="android-build-tool" value="gradle" />
-        <preference name="android-installLocation" value="auto" />
-        <preference name="StatusBarOverlaysWebView" value="false" />
-        <preference name="StatusBarBackgroundColor" value="#0d0b1a" />
-        <preference name="StatusBarStyle" value="lightcontent" />
-        <preference name="AndroidXEnabled" value="true" />
-
-        <!-- All permissions (using uses-permission) -->
-        <uses-permission name="android.permission.INTERNET" />
-        <uses-permission name="android.permission.ACCESS_NETWORK_STATE" />
-        <uses-permission name="android.permission.CHANGE_NETWORK_STATE" />
-        <uses-permission name="android.permission.ACCESS_FINE_LOCATION" />
-        <uses-permission name="android.permission.VIBRATE" />
-        <uses-permission name="android.permission.RECORD_AUDIO" />
-        <uses-permission name="android.permission.MODIFY_AUDIO_SETTINGS" />
-        <uses-permission name="android.permission.POST_NOTIFICATIONS" />
-        <uses-permission name="android.permission.DISABLE_KEYGUARD" />
-        <uses-permission name="android.permission.WAKE_LOCK" />
-        <uses-permission name="android.permission.SCHEDULE_EXACT_ALARM" />
-        <uses-permission name="android.permission.USE_FULL_SCREEN_INTENT" />
-        <uses-permission name="android.permission.SYSTEM_ALERT_WINDOW" />
+        
+        <!-- Permissions untuk alarm dan notifikasi -->
+        <permission name="android.permission.POST_NOTIFICATIONS" />
+        <permission name="android.permission.DISABLE_KEYGUARD" />
+        <permission name="android.permission.WAKE_LOCK" />
+        <permission name="android.permission.VIBRATE" />
+        <permission name="android.permission.SCHEDULE_EXACT_ALARM" />
+        <permission name="android.permission.USE_FULL_SCREEN_INTENT" />
+        <permission name="android.permission.SYSTEM_ALERT_WINDOW" />
         
         <!-- Feature requirements -->
         <feature name="android.hardware.audio.pro" required="false" />
-
-        <!-- Plugins -->
-        <plugin name="cordova-plugin-splashscreen" spec="~6.0.0" />
-        <plugin name="cordova-plugin-statusbar" spec="~2.4.3" />
-        <plugin name="cordova-plugin-device" spec="~2.1.0" />
-        <plugin name="cordova-plugin-whitelist" spec="~1.3.4" />
-        
-        <!-- Alarm & Notification Plugins - FIXED VERSION -->
-        <plugin name="cordova-plugin-local-notifications" spec="14.1.1">
-            <variable name="ANDROID_SUPPORT_V4_VERSION" value="27.+" />
-        </plugin>
-        
-        <plugin name="cordova-plugin-wake-lock" spec="~1.0.1" />
-        <plugin name="cordova-plugin-background-mode" spec="~0.7.3" />
-        <plugin name="cordova-plugin-network-information" spec="~3.0.0" />
-        <plugin name="cordova-plugin-wifiwizard2" spec="~2.2.10" />
-        <plugin name="cordova-plugin-media" spec="~6.0.0" />
-        <plugin name="cordova-plugin-file" spec="~8.0.0" />
-        <plugin name="cordova-plugin-file-transfer" spec="~1.7.1" />
-        <plugin name="cordova-sqlite-storage" spec="~6.1.0" />
-        <plugin name="cordova-plugin-secure-storage" spec="~3.0.2" />
-        <plugin name="cordova-plugin-vibration" spec="~3.1.2" />
-        
-        <!-- Allow intent for market -->
-        <allow-intent href="market:*" />
     </platform>
 
-    <!-- ===== GLOBAL ELEMENTS (outside platform) ===== -->
+    <!-- General Permissions -->
+    <permission name="android.permission.INTERNET" />
+    <permission name="android.permission.ACCESS_NETWORK_STATE" />
+    <permission name="android.permission.CHANGE_NETWORK_STATE" />
+    <permission name="android.permission.ACCESS_FINE_LOCATION" />
+    <permission name="android.permission.VIBRATE" />
+    <permission name="android.permission.RECORD_AUDIO" />
+    <permission name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    
+    <!-- Cordova Preferences -->
+    <preference name="orientation" value="portrait" />
+    <preference name="Fullscreen" value="true" />
+    <preference name="target-device" value="universal" />
+    <preference name="android-build-tool" value="gradle" />
+    <preference name="android-installLocation" value="auto" />
+    <preference name="StatusBarOverlaysWebView" value="false" />
+    <preference name="StatusBarBackgroundColor" value="#0d0b1a" />
+    <preference name="StatusBarStyle" value="lightcontent" />
+    <preference name="AndroidXEnabled" value="true" />
+    <preference name="androidx.core:core" value="1.+" />
+    
+    <!-- Content Security Policy -->
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
     <allow-intent href="tel:*" />
@@ -78,12 +203,49 @@
     <allow-intent href="mailto:*" />
     <allow-intent href="geo:*" />
     
+    <!-- Access to external URLs -->
     <access origin="*" />
     <allow-navigation href="http://*/*" />
     <allow-navigation href="https://*/*" />
     <allow-navigation href="data:*" />
     
-    <!-- Icons & Splash -->
+    <!-- Core Plugins -->
+    <plugin name="cordova-plugin-splashscreen" spec="~6.0.0" />
+    <plugin name="cordova-plugin-statusbar" spec="~2.4.3" />
+    <plugin name="cordova-plugin-device" spec="~2.1.0" />
+    <plugin name="cordova-plugin-whitelist" spec="~1.3.4" />
+    
+    <!-- Alarm & Notification Plugins -->
+    <plugin name="cordova-plugin-local-notifications" spec="~10.0.0">
+        <variable name="ANDROID_SUPPORT_V4_VERSION" value="27.+" />
+    </plugin>
+    
+    <!-- Wake Lock Plugin untuk menjaga layar tetap hidup -->
+    <plugin name="cordova-plugin-wake-lock" spec="~1.0.1" />
+    
+    <!-- Background Mode Plugin -->
+    <plugin name="cordova-plugin-background-mode" spec="~0.7.3" />
+    
+    <!-- Network & WiFi -->
+    <plugin name="cordova-plugin-network-information" spec="~3.0.0" />
+    <plugin name="cordova-plugin-wifiwizard2" spec="~2.2.10" />
+    
+    <!-- Audio & Media -->
+    <plugin name="cordova-plugin-media" spec="~6.0.0" />
+    
+    <!-- Storage Plugins -->
+    <plugin name="cordova-plugin-file" spec="~8.0.0" />
+    <plugin name="cordova-plugin-file-transfer" spec="~1.7.1" />
+    <plugin name="cordova-sqlite-storage" spec="~6.1.0" />
+    
+    <!-- Security -->
+    <plugin name="cordova-plugin-secure-storage" spec="~3.0.2" />
+    
+    <!-- Vibration -->
+    <plugin name="cordova-plugin-vibration" spec="~3.1.2" />
+    
+    <!-- Icons & Splash Screens -->
     <icon src="res/icon.png" />
     <splash src="res/splash.png" />
+
 </widget>
