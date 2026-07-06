@@ -1,0 +1,123 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
+android {
+    compileSdkVersion 34
+    buildToolsVersion "34.0.0"
+    ndkVersion "25.1.8937393"
+
+    defaultConfig {
+        applicationId "com.wemos.smartwatch.pro"
+        minSdkVersion 26
+        targetSdkVersion 34
+        versionCode 1
+        versionName "1.0.0"
+        
+        // For better performance
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
+        }
+        
+        // MultiDex support jika diperlukan
+        multiDexEnabled true
+        
+        // Notification channel
+        manifestPlaceholders = [
+            notificationChannelId: "wemos_alarm_channel",
+            notificationChannelName: "Wemos Alarm"
+        ]
+    }
+
+    buildFeatures {
+        viewBinding false
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+            debuggable true
+            minifyEnabled false
+        }
+        
+        release {
+            debuggable false
+            minifyEnabled true
+            shrinkResources true
+            
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            
+            // Signing config (opsional, untuk production)
+            // signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    packagingOptions {
+        pickFirst 'META-INF/proguard/androidx-*.pro'
+    }
+
+    // Suppress warnings
+    lintOptions {
+        disable 'MissingTranslation'
+        disable 'ExtraTranslation'
+        disable 'GoogleAppIndexingWarning'
+        abortOnError false
+    }
+}
+
+// Signing configuration (update dengan keystore Anda)
+/*
+android {
+    signingConfigs {
+        release {
+            storeFile file("keystore.jks")
+            storePassword System.getenv("KEYSTORE_PASSWORD")
+            keyAlias System.getenv("KEY_ALIAS")
+            keyPassword System.getenv("KEY_PASSWORD")
+        }
+    }
+}
+*/
+
+dependencies {
+    // Core AndroidX
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.core:core:1.10.1'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    
+    // MultiDex
+    implementation 'androidx.multidex:multidex:2.0.1'
+    
+    // Kotlin
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.21'
+    
+    // Google Play Services
+    implementation 'com.google.android.gms:play-services-base:18.2.0'
+    
+    // Local Notifications (dari Cordova plugin)
+    implementation 'androidx.work:work-runtime:2.8.1'
+    
+    // Notification support
+    implementation 'androidx.work:work-runtime-ktx:2.8.1'
+    
+    // Test dependencies
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}
+
+// Gradle properties optimization
+gradle.projectsEvaluated {
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:deprecation"
+    }
+}
