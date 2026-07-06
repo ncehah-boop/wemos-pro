@@ -1,0 +1,362 @@
+<!-- Alarm Manager Integration Section -->
+<!-- Add this before the closing </head> tag in index.html -->
+
+<!-- Alarm Manager Script -->
+<script src="js/alarm-manager.js"></script>
+
+<!-- Alarm Manager Styles -->
+<style>
+    /* Alarm Control Panel */
+    .alarm-control-panel {
+        background: var(--glass-bg);
+        backdrop-filter: var(--blur);
+        border-radius: var(--radius-lg);
+        padding: 16px 18px;
+        margin-bottom: 12px;
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--glass-shadow);
+    }
+
+    .alarm-control-panel .panel-title {
+        font-size: 0.55rem;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--text-secondary);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+    }
+
+    .alarm-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .alarm-btn {
+        padding: 12px 8px;
+        border: none;
+        border-radius: var(--radius-md);
+        font-size: 0.6rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        cursor: pointer;
+        transition: var(--transition);
+        color: #fff;
+        min-height: 48px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    .alarm-btn:active {
+        transform: scale(0.92);
+        filter: brightness(0.9);
+    }
+
+    .alarm-btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    .alarm-btn.trigger { background: var(--gradient-4); }
+    .alarm-btn.warning { background: var(--gradient-4); }
+    .alarm-btn.notification { background: var(--gradient-3); }
+    .alarm-btn.dismiss { background: var(--gradient-2); }
+    .alarm-btn.schedule { background: var(--gradient-1); }
+
+    .alarm-status {
+        margin-top: 12px;
+        padding: 10px 12px;
+        background: rgba(0,0,0,0.2);
+        border-radius: var(--radius-md);
+        font-size: 0.5rem;
+        color: var(--text-secondary);
+        border: 1px solid var(--glass-border);
+    }
+
+    .alarm-status .status-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 4px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.02);
+    }
+
+    .alarm-status .status-item:last-child {
+        border-bottom: none;
+    }
+
+    .alarm-status .label {
+        font-weight: 600;
+        color: var(--text-dim);
+    }
+
+    .alarm-status .value {
+        color: var(--accent-cyan);
+        font-weight: 700;
+    }
+
+    .alarm-list {
+        margin-top: 12px;
+    }
+
+    .alarm-item {
+        background: rgba(0,0,0,0.2);
+        padding: 10px 12px;
+        border-radius: var(--radius-md);
+        margin-bottom: 8px;
+        border: 1px solid var(--glass-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.5rem;
+    }
+
+    .alarm-item.active {
+        border-color: var(--accent-red);
+        background: rgba(248,113,113,0.1);
+    }
+
+    .alarm-item-info {
+        flex: 1;
+    }
+
+    .alarm-item-title {
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 2px;
+    }
+
+    .alarm-item-type {
+        font-size: 0.4rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+    }
+
+    .alarm-item-actions {
+        display: flex;
+        gap: 4px;
+    }
+
+    .alarm-item-btn {
+        padding: 4px 8px;
+        border: 1px solid var(--glass-border);
+        background: rgba(255,255,255,0.05);
+        border-radius: var(--radius-sm);
+        font-size: 0.4rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: var(--transition);
+        text-transform: uppercase;
+    }
+
+    .alarm-item-btn:active {
+        transform: scale(0.9);
+        background: rgba(139,92,246,0.2);
+    }
+
+    .alarm-item-btn.danger {
+        color: var(--accent-red);
+    }
+</style>
+
+<!-- HTML Template for Alarm Control Panel -->
+<!-- Add this inside the main-content div -->
+<!--
+<div class="alarm-control-panel">
+    <div class="panel-title">
+        🔔 Alarm Manager
+        <span class="badge-pill" id="alarm-status-badge">Ready</span>
+    </div>
+
+    <div class="alarm-controls">
+        <button class="alarm-btn trigger" id="trigger-alarm-btn">
+            <span>🔊 Trigger</span>
+            <span style="font-size: 0.4rem; opacity: 0.7;">Alarm</span>
+        </button>
+        <button class="alarm-btn warning" id="trigger-warning-btn">
+            <span>⚠️ Warning</span>
+            <span style="font-size: 0.4rem; opacity: 0.7;">Alert</span>
+        </button>
+        <button class="alarm-btn notification" id="trigger-notify-btn">
+            <span>📢 Notify</span>
+            <span style="font-size: 0.4rem; opacity: 0.7;">Message</span>
+        </button>
+        <button class="alarm-btn dismiss" id="dismiss-all-btn">
+            <span>✓ Dismiss</span>
+            <span style="font-size: 0.4rem; opacity: 0.7;">All</span>
+        </button>
+    </div>
+
+    <div class="alarm-status">
+        <div class="status-item">
+            <span class="label">Active Alarms:</span>
+            <span class="value" id="active-alarm-count">0</span>
+        </div>
+        <div class="status-item">
+            <span class="label">Status:</span>
+            <span class="value" id="alarm-manager-status">Initialized</span>
+        </div>
+    </div>
+
+    <div class="alarm-list" id="alarm-list-container"></div>
+</div>
+-->
+
+<!-- JavaScript for Alarm Manager Integration -->
+<script>
+    // Wait for Cordova and AlarmManager to be ready
+    document.addEventListener('deviceready', function() {
+        console.log('[UI] Device ready, initializing alarm controls');
+        initAlarmControls();
+    }, false);
+
+    function initAlarmControls() {
+        // Check if alarm manager is initialized
+        if (!window.alarmManager) {
+            console.warn('[UI] AlarmManager not initialized yet');
+            setTimeout(initAlarmControls, 500);
+            return;
+        }
+
+        console.log('[UI] AlarmManager ready, setting up controls');
+
+        // Trigger alarm button
+        const triggerBtn = document.getElementById('trigger-alarm-btn');
+        if (triggerBtn) {
+            triggerBtn.addEventListener('click', () => {
+                alarmManager.triggerAlarm({
+                    title: 'Test Alarm',
+                    message: 'This is a test alarm notification',
+                    alarmType: 'alarm',
+                    duration: 30,
+                    vibrate: true,
+                    wakeScreen: true,
+                    volume: 100
+                });
+                updateAlarmUI();
+            });
+        }
+
+        // Warning button
+        const warningBtn = document.getElementById('trigger-warning-btn');
+        if (warningBtn) {
+            warningBtn.addEventListener('click', () => {
+                alarmManager.triggerAlarm({
+                    title: 'Warning Alert',
+                    message: 'Temperature is too high!',
+                    alarmType: 'warning',
+                    duration: 20,
+                    vibrate: true,
+                    wakeScreen: true,
+                    volume: 80
+                });
+                updateAlarmUI();
+            });
+        }
+
+        // Notification button
+        const notifyBtn = document.getElementById('trigger-notify-btn');
+        if (notifyBtn) {
+            notifyBtn.addEventListener('click', () => {
+                alarmManager.triggerAlarm({
+                    title: 'Notification',
+                    message: 'Device status update received',
+                    alarmType: 'notification',
+                    duration: 10,
+                    vibrate: true,
+                    wakeScreen: false,
+                    volume: 60
+                });
+                updateAlarmUI();
+            });
+        }
+
+        // Dismiss all button
+        const dismissBtn = document.getElementById('dismiss-all-btn');
+        if (dismissBtn) {
+            dismissBtn.addEventListener('click', () => {
+                alarmManager.clearAllAlarms();
+                updateAlarmUI();
+            });
+        }
+
+        // Listen for alarm status changes
+        document.addEventListener('alarmStatusChange', (event) => {
+            console.log('[UI] Alarm status changed:', event.detail);
+            updateAlarmUI();
+        });
+
+        // Update UI
+        updateAlarmUI();
+    }
+
+    function updateAlarmUI() {
+        // Update active alarm count
+        const activeCount = alarmManager.getActiveAlarms().length;
+        const countEl = document.getElementById('active-alarm-count');
+        if (countEl) {
+            countEl.textContent = activeCount;
+        }
+
+        // Update status badge
+        const statusBadge = document.getElementById('alarm-status-badge');
+        if (statusBadge) {
+            statusBadge.className = 'badge-pill';
+            if (activeCount > 0) {
+                statusBadge.classList.add('danger');
+                statusBadge.textContent = 'ALARMING';
+            } else {
+                statusBadge.classList.add('success');
+                statusBadge.textContent = 'Ready';
+            }
+        }
+
+        // Update alarm list
+        updateAlarmList();
+    }
+
+    function updateAlarmList() {
+        const container = document.getElementById('alarm-list-container');
+        if (!container) return;
+
+        const alarms = alarmManager.getActiveAlarms();
+        
+        if (alarms.length === 0) {
+            container.innerHTML = '<div class="text-muted" style="text-align: center; padding: 8px;">No active alarms</div>';
+            return;
+        }
+
+        container.innerHTML = alarms.map(alarm => `
+            <div class="alarm-item active">
+                <div class="alarm-item-info">
+                    <div class="alarm-item-title">${alarm.title}</div>
+                    <div class="alarm-item-type">${alarm.alarmType}</div>
+                </div>
+                <div class="alarm-item-actions">
+                    <button class="alarm-item-btn" onclick="alarmManager.snoozeAlarm(${alarm.id}, 5)">
+                        Snooze
+                    </button>
+                    <button class="alarm-item-btn danger" onclick="alarmManager.dismissAlarm(${alarm.id})">
+                        Dismiss
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Global error handler for alarms
+    window.addEventListener('error', function(event) {
+        if (event.message && event.message.includes('alarm')) {
+            console.error('[UI] Alarm error:', event);
+        }
+    });
+</script>
