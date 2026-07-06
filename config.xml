@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.wemos.smartwatch.pro" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>Wemos D1 Pro</name>
+    <description>
+        Aplikasi kontrol Wemos D1 dengan alarm dan notifikasi real-time
+    </description>
+    <author email="dev@wemos.local" href="http://wemos.local">
+        Wemos Development Team
+    </author>
+    
+    <!-- Platform: Android -->
+    <platform name="android">
+        <allow-intent href="market:*" />
+        <!-- API Level 34 (Android 13) -->
+        <preference name="android-minSdkVersion" value="26" />
+        <preference name="android-targetSdkVersion" value="34" />
+        <preference name="android-compileSdkVersion" value="34" />
+        <preference name="GradlePluginGoogleServicesVersion" value="4.3.15" />
+        <preference name="GradleVersion" value="7.6.2" />
+        
+        <!-- Permissions untuk alarm dan notifikasi -->
+        <permission name="android.permission.POST_NOTIFICATIONS" />
+        <permission name="android.permission.DISABLE_KEYGUARD" />
+        <permission name="android.permission.WAKE_LOCK" />
+        <permission name="android.permission.VIBRATE" />
+        <permission name="android.permission.SCHEDULE_EXACT_ALARM" />
+        
+        <!-- Feature requirements -->
+        <feature name="android.hardware.audio.pro" required="false" />
+    </platform>
+
+    <!-- Permissions Umum -->
+    <permission name="android.permission.INTERNET" />
+    <permission name="android.permission.ACCESS_NETWORK_STATE" />
+    <permission name="android.permission.CHANGE_NETWORK_STATE" />
+    <permission name="android.permission.ACCESS_FINE_LOCATION" />
+    <permission name="android.permission.VIBRATE" />
+    <permission name="android.permission.RECORD_AUDIO" />
+    
+    <!-- Core Cordova Plugins -->
+    <preference name="orientation" value="portrait" />
+    <preference name="Fullscreen" value="true" />
+    <preference name="target-device" value="universal" />
+    <preference name="android-build-tool" value="gradle" />
+    <preference name="android-installLocation" value="auto" />
+    <preference name="StatusBarOverlaysWebView" value="false" />
+    <preference name="StatusBarBackgroundColor" value="#0d0b1a" />
+    <preference name="StatusBarStyle" value="lightcontent" />
+    <preference name="AndroidXEnabled" value="true" />
+    
+    <!-- Content Security Policy -->
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-intent href="tel:*" />
+    <allow-intent href="sms:*" />
+    <allow-intent href="mailto:*" />
+    <allow-intent href="geo:*" />
+    
+    <!-- Access to external URLs -->
+    <access origin="*" />
+    
+    <!-- Plugins: Core -->
+    <plugin name="cordova-plugin-splashscreen" spec="~6.0.0" />
+    <plugin name="cordova-plugin-statusbar" spec="~2.4.3" />
+    <plugin name="cordova-plugin-device" spec="~2.1.0" />
+    
+    <!-- Plugins: Alarm & Notification -->
+    <plugin name="cordova-plugin-local-notifications" spec="~10.0.0">
+        <variable name="ANDROID_SUPPORT_V4_VERSION" value="27.+" />
+    </plugin>
+    
+    <plugin name="cordova-plugin-wake-lock" spec="~1.0.1" />
+    
+    <!-- Plugins: Network & Socket -->
+    <plugin name="cordova-plugin-network-information" spec="~3.0.0" />
+    <plugin name="cordova-plugin-wifiwizard2" spec="~2.2.10" />
+    
+    <!-- Plugins: Audio -->
+    <plugin name="cordova-plugin-media" spec="~6.0.0" />
+    <plugin name="cordova-plugin-device-sound" spec="~1.1.0" />
+    
+    <!-- Plugins: Storage -->
+    <plugin name="cordova-plugin-file" spec="~8.0.0" />
+    <plugin name="cordova-plugin-file-transfer" spec="~1.7.1" />
+    <plugin name="cordova-sqlite-storage" spec="~6.1.0" />
+    
+    <!-- Plugins: Security -->
+    <plugin name="cordova-plugin-secure-storage" spec="~3.0.2" />
+    
+    <!-- Plugins: Background -->
+    <plugin name="cordova-plugin-background-mode" spec="~0.7.3" />
+    
+    <!-- HTML -->
+    <access origin="*" />
+    <allow-navigation href="http://*/*" />
+    <allow-navigation href="https://*/*" />
+    <allow-navigation href="data:*" />
+    
+    <!-- Icon & Splash -->
+    <icon src="res/icon.png" />
+    <splash src="res/splash.png" />
+
+</widget>
