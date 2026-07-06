@@ -1,0 +1,59 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    ext {
+        // SDK dan API Configuration
+        compileSdkVersion = 34
+        minSdkVersion = 26
+        targetSdkVersion = 34
+        buildToolsVersion = "34.0.0"
+        
+        // Dependency Versions
+        gradleVersion = "7.6.2"
+        androidGradlePluginVersion = "8.0.2"
+        kotlinVersion = "1.8.21"
+        
+        // AndroidX
+        androidxAppCompatVersion = "1.6.1"
+        androidxConstraintLayoutVersion = "2.1.4"
+        androidxCoreVersion = "1.10.1"
+        androidxLegacySupportV4Version = "1.0.0"
+        
+        // Google Services
+        googleServicesVersion = "4.3.15"
+        googlePlayServicesVersion = "20.0.0"
+        
+        // Firebase (optional)
+        firebaseVersion = "32.0.0"
+    }
+
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    
+    dependencies {
+        classpath "com.android.tools.build:gradle:$androidGradlePluginVersion"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+        classpath "com.google.gms:google-services:$googleServicesVersion"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+// Gradle wrapper configuration
+wrapper {
+    gradleVersion = "7.6.2"
+}
+
+// Task untuk cleanup
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
