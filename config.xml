@@ -7,17 +7,16 @@
     <author email="dev@wemos.local" href="http://wemos.local">
         Wemos Development Team
     </author>
-    
+
     <!-- Platform: Android -->
     <platform name="android">
         <allow-intent href="market:*" />
-        <!-- API Level 34 (Android 13+) -->
         <preference name="android-minSdkVersion" value="26" />
         <preference name="android-targetSdkVersion" value="34" />
         <preference name="android-compileSdkVersion" value="34" />
         <preference name="GradlePluginGoogleServicesVersion" value="4.3.15" />
         <preference name="GradleVersion" value="7.6.2" />
-        
+
         <!-- Permissions untuk alarm dan notifikasi -->
         <permission name="android.permission.POST_NOTIFICATIONS" />
         <permission name="android.permission.DISABLE_KEYGUARD" />
@@ -26,8 +25,7 @@
         <permission name="android.permission.SCHEDULE_EXACT_ALARM" />
         <permission name="android.permission.USE_FULL_SCREEN_INTENT" />
         <permission name="android.permission.SYSTEM_ALERT_WINDOW" />
-        
-        <!-- Feature requirements -->
+
         <feature name="android.hardware.audio.pro" required="false" />
     </platform>
 
@@ -39,7 +37,7 @@
     <permission name="android.permission.VIBRATE" />
     <permission name="android.permission.RECORD_AUDIO" />
     <permission name="android.permission.MODIFY_AUDIO_SETTINGS" />
-    
+
     <!-- Cordova Preferences -->
     <preference name="orientation" value="portrait" />
     <preference name="Fullscreen" value="true" />
@@ -51,7 +49,7 @@
     <preference name="StatusBarStyle" value="lightcontent" />
     <preference name="AndroidXEnabled" value="true" />
     <preference name="androidx.core:core" value="1.+" />
-    
+
     <!-- Content Security Policy -->
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
@@ -59,50 +57,13 @@
     <allow-intent href="sms:*" />
     <allow-intent href="mailto:*" />
     <allow-intent href="geo:*" />
-    
-    <!-- Access to external URLs -->
+
     <access origin="*" />
     <allow-navigation href="http://*/*" />
     <allow-navigation href="https://*/*" />
     <allow-navigation href="data:*" />
-    
-    <!-- Core Plugins -->
-    <plugin name="cordova-plugin-splashscreen" spec="~6.0.0" />
-    <plugin name="cordova-plugin-statusbar" spec="~2.4.3" />
-    <plugin name="cordova-plugin-device" spec="~2.1.0" />
-    <plugin name="cordova-plugin-whitelist" spec="~1.3.4" />
-    
-    <!-- Alarm & Notification Plugins -->
-    <plugin name="cordova-plugin-local-notifications" spec="~10.0.0">
-        <variable name="ANDROID_SUPPORT_V4_VERSION" value="27.+" />
-    </plugin>
-    
-    <!-- Wake Lock Plugin untuk menjaga layar tetap hidup -->
-    <plugin name="cordova-plugin-wake-lock" spec="~1.0.1" />
-    
-    <!-- Background Mode Plugin -->
-    <plugin name="cordova-plugin-background-mode" spec="~0.7.3" />
-    
-    <!-- Network & WiFi -->
-    <plugin name="cordova-plugin-network-information" spec="~3.0.0" />
-    <plugin name="cordova-plugin-wifiwizard2" spec="~2.2.10" />
-    
-    <!-- Audio & Media -->
-    <plugin name="cordova-plugin-media" spec="~6.0.0" />
-    
-    <!-- Storage Plugins -->
-    <plugin name="cordova-plugin-file" spec="~8.0.0" />
-    <plugin name="cordova-plugin-file-transfer" spec="~1.7.1" />
-    <plugin name="cordova-sqlite-storage" spec="~6.1.0" />
-    
-    <!-- Security -->
-    <plugin name="cordova-plugin-secure-storage" spec="~3.0.2" />
-    
-    <!-- Vibration -->
-    <plugin name="cordova-plugin-vibration" spec="~3.1.2" />
-    
+
     <!-- Icons & Splash Screens -->
     <icon src="res/icon.png" />
     <splash src="res/splash.png" />
-
 </widget>
