@@ -92,7 +92,7 @@ jobs:
           cordova plugin add cordova-plugin-file
           cordova plugin add cordova-plugin-vibration
           cordova plugin add cordova-plugin-advanced-http
-          cordova plugin add cordova-plugin-local-notification   # tanpa 's'
+          cordova plugin add cordova-plugin-local-notification
 
       - name: Prepare project
         run: cordova prepare android
@@ -107,14 +107,14 @@ jobs:
             fi
           fi
 
-          # 2. AndroidManifest: cleartext + networkSecurityConfig
+          # 2. AndroidManifest: cleartext + networkSecurityConfig (gunakan pemisah #)
           MANIFEST="platforms/android/app/src/main/AndroidManifest.xml"
           if [ -f "$MANIFEST" ]; then
             if ! grep -q "usesCleartextTraffic" "$MANIFEST"; then
-              sed -i 's/<application /<application android:usesCleartextTraffic="true" /' "$MANIFEST"
+              sed -i 's#<application #<application android:usesCleartextTraffic="true" #' "$MANIFEST"
             fi
             if ! grep -q "networkSecurityConfig" "$MANIFEST"; then
-              sed -i 's/<application /<application android:networkSecurityConfig="@xml/network_security_config" /' "$MANIFEST"
+              sed -i 's#<application #<application android:networkSecurityConfig="@xml/network_security_config" #' "$MANIFEST"
             fi
           fi
 
@@ -141,11 +141,11 @@ jobs:
             echo "android.enableJetifier=true" >> "$GRADLE_PROPS"
           fi
 
-          # 5. Patch plugin local-notification: compile -> implementation
+          # 5. Patch plugin local-notification: compile -> implementation (gunakan pemisah #)
           NOTIF_GRADLE="platforms/android/cordova-plugin-local-notification/pro-localnotification.gradle"
           if [ -f "$NOTIF_GRADLE" ]; then
             echo "Memperbaiki file $NOTIF_GRADLE"
-            sed -i 's/compile(/implementation(/g' "$NOTIF_GRADLE"
+            sed -i 's#compile(#implementation(#g' "$NOTIF_GRADLE"
             cat "$NOTIF_GRADLE"
           else
             echo "File $NOTIF_GRADLE tidak ditemukan, plugin local-notification mungkin tidak terpasang."
