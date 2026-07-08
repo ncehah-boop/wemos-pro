@@ -50,60 +50,60 @@ jobs:
       - name: Install Node dependencies (ignore scripts)
         run: npm install --ignore-scripts
 
-      - name: Add Android platform (safe: remove first if exists)
+      - name: Add Android platform
         run: |
           cordova platform rm android --nosave || true
           cordova platform add android@12.0.0
 
-      - name: Add splashscreen plugin
+      - name: Add cordova-plugin-splashscreen
         run: cordova plugin add cordova-plugin-splashscreen
 
-      - name: Add statusbar plugin
+      - name: Add cordova-plugin-statusbar
         run: cordova plugin add cordova-plugin-statusbar
 
-      - name: Add device plugin
+      - name: Add cordova-plugin-device
         run: cordova plugin add cordova-plugin-device
 
-      - name: Add whitelist plugin
+      - name: Add cordova-plugin-whitelist
         run: cordova plugin add cordova-plugin-whitelist
 
-      - name: Add local-notification plugin
+      - name: Add cordova-plugin-local-notification
         run: cordova plugin add cordova-plugin-local-notification --variable ANDROID_SUPPORT_V4_VERSION="27.+"
 
-      - name: Add wakelock plugin
+      - name: Add cordova-plugin-wakelock
         run: cordova plugin add cordova-plugin-wakelock
 
-      - name: Add background-mode plugin
+      - name: Add cordova-plugin-background-mode
         run: cordova plugin add cordova-plugin-background-mode
 
-      - name: Add network-information plugin
+      - name: Add cordova-plugin-network-information
         run: cordova plugin add cordova-plugin-network-information
 
-      - name: Add wifiwizard2 plugin
+      - name: Add cordova-plugin-wifiwizard2
         run: cordova plugin add cordova-plugin-wifiwizard2
 
-      - name: Add media plugin
+      - name: Add cordova-plugin-media
         run: cordova plugin add cordova-plugin-media
 
-      - name: Add file plugin
+      - name: Add cordova-plugin-file
         run: cordova plugin add cordova-plugin-file
 
-      - name: Add file-transfer plugin
+      - name: Add cordova-plugin-file-transfer
         run: cordova plugin add cordova-plugin-file-transfer
 
-      - name: Add sqlite-storage plugin
+      - name: Add cordova-sqlite-storage
         run: cordova plugin add cordova-sqlite-storage
 
-      - name: Add secure-storage plugin
+      - name: Add cordova-plugin-secure-storage
         run: cordova plugin add cordova-plugin-secure-storage
 
-      - name: Add vibration plugin
+      - name: Add cordova-plugin-vibration
         run: cordova plugin add cordova-plugin-vibration
 
-      - name: Prepare project (copy www & resources)
+      - name: Prepare project
         run: cordova prepare android
 
-      - name: Copy custom Java sources and resources to platform
+      - name: Copy custom Java sources and resources
         run: |
           mkdir -p platforms/android/app/src/main/java/com/wemos/notification
           cp -r app/src/main/java/com/wemos/notification/*.java platforms/android/app/src/main/java/com/wemos/notification/ 2>/dev/null || true
@@ -116,7 +116,7 @@ jobs:
       - name: Build Debug APK
         run: cordova build android --debug
 
-      - name: Build Release APK (if signing config available)
+      - name: Build Release APK
         run: cordova build android --release
         continue-on-error: true
 
