@@ -138,14 +138,35 @@ jobs:
           cp proguard-rules.pro platforms/android/app/ 2>/dev/null || true
           echo "Custom sources copied successfully."
 
-      - name: Fix plugin compile() and add compileSdkVersion
+      - name: Fix Gradle issues (compile -> implementation, compileSdkVersion)
         run: |
-          # 1. Ganti compile() menjadi implementation() di plugin local-notification
-          sed -i 's/compile(/implementation(/g' platforms/android/cordova-plugin-local-notification/pro-localnotification.gradle
-          # 2. Pastikan compileSdkVersion ada di app/build.gradle
-          if ! grep -q "compileSdkVersion" platforms/android/app/build.gradle; then
-            echo "Menambahkan compileSdkVersion 34"
-            sed -i '/apply plugin:/a android {\n    compileSdkVersion 34\n}' platforms/android/app/build.gradle
+          echo "=== Memperbaiki plugin local-notification ==="
+          FILE="platforms/android/cordova-plugin-local-notification/pro-localnotification.gradle"
+          if [ -f "$FILE" ]; then
+            echo "File ditemukan. Isi sebelum perbaikan:"
+            cat "$FILE"
+            # Ganti semua 'compile' dengan 'implementation' (hati-hati hanya yang diawali spasi atau tab)
+            sed -i 's/^\([ \t]*\)compile /\1implementation /g' "$FILE"
+            echo "Isi setelah perbaikan:"
+            cat "$FILE"
+          else
+            echo "File tidak ditemukan: $FILE"
+          fi
+
+          echo "=== Menambahkan compileSdkVersion ke app/build.gradle ==="
+          APP_BUILD="platforms/android/app/build.gradle"
+          if [ -f "$APP_BUILD" ]; then
+            if ! grep -q "compileSdkVersion" "$APP_BUILD"; then
+              echo "compileSdkVersion belum ada, menambahkannya..."
+              # Tambahkan setelah baris 'apply plugin: 'com.android.application''
+              sed -i "/apply plugin: 'com.android.application'/a android {\n    compileSdkVersion 34\n}" "$APP_BUILD"
+              echo "Isi app/build.gradle sekarang:"
+              cat "$APP_BUILD"
+            else
+              echo "compileSdkVersion sudah ada."
+            fi
+          else
+            echo "File tidak ditemukan: $APP_BUILD"
           fi
 
       - name: Build Debug APK
