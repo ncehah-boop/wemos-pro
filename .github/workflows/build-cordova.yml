@@ -100,6 +100,18 @@ jobs:
       - name: Add cordova-plugin-vibration
         run: cordova plugin add cordova-plugin-vibration
 
+      - name: Ensure icon and splash resources exist
+        run: |
+          mkdir -p res
+          if [ ! -f res/icon.png ]; then
+            echo "Creating placeholder icon.png"
+            touch res/icon.png
+          fi
+          if [ ! -f res/splash.png ]; then
+            echo "Creating placeholder splash.png"
+            touch res/splash.png
+          fi
+
       - name: Prepare project
         run: cordova prepare android
 
