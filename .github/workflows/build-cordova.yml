@@ -26,16 +26,30 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Ensure icon and splash resources exist
+      - name: Ensure valid PNG icons and splash exist
         run: |
           mkdir -p res
+          # Buat PNG 1x1 transparan jika belum ada
           if [ ! -f res/icon.png ]; then
-            echo "Creating placeholder icon.png"
-            touch res/icon.png
+            echo "Creating valid 1x1 PNG placeholder for icon.png"
+            python3 -c "
+  import struct, zlib
+  def create_png(width, height, r, g, b, a):
+      raw = b''
+      for _ in range(height):
+          raw += b'\x00' + bytes([r, g, b, a]) * width
+      def chunk(chunk_type, data):
+          c = chunk_type + data
+          return struct.pack('>I', len(data)) + c + struct.pack('>I', zlib.crc32(c) & 0xffffffff)
+      ihdr = struct.pack('>IIBBBBB', width, height, 8, 6, 0, 0, 0)
+      return b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', ihdr) + chunk(b'IDAT', zlib.compress(raw)) + chunk(b'IEND', b'')
+  with open('res/icon.png', 'wb') as f:
+      f.write(create_png(1, 1, 255, 255, 255, 0))
+  "
           fi
           if [ ! -f res/splash.png ]; then
-            echo "Creating placeholder splash.png"
-            touch res/splash.png
+            echo "Creating valid 1x1 PNG placeholder for splash.png"
+            cp res/icon.png res/splash.png
           fi
 
       - name: Set up Node.js 18
@@ -83,7 +97,7 @@ jobs:
           cordova platform rm android --nosave || true
           cordova platform add android@12.0.0
 
-      # Plugin inti yang aman
+      # Plugin inti
       - name: Add cordova-plugin-splashscreen
         run: cordova plugin add cordova-plugin-splashscreen
 
@@ -158,7 +172,7 @@ jobs:
         if: always()
         with:
           name: wemos-notification-app-release.apk
-          path: platforms/android/app/build/outputs/apk/release/app-release.apk
+          path: platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk
           retention-days: 30
 
       - name: Build Report
