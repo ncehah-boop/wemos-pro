@@ -83,8 +83,8 @@ jobs:
       - name: Add cordova-plugin-local-notification
         run: cordova plugin add cordova-plugin-local-notification --variable ANDROID_SUPPORT_V4_VERSION="27.+"
 
-      - name: Add cordova-plugin-wakelock
-        run: cordova plugin add cordova-plugin-wakelock
+      - name: Add cordova-plugin-wake-lock
+        run: cordova plugin add cordova-plugin-wake-lock
 
       - name: Add cordova-plugin-background-mode
         run: cordova plugin add cordova-plugin-background-mode
