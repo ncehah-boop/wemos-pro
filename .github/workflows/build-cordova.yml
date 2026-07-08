@@ -55,8 +55,29 @@ jobs:
           target: google_apis
           build-tools: '34.0.0'
 
-      - name: Install required build tools (additional)
-        run: yes | sdkmanager "build-tools;34.0.0" "platforms;android-34"
+      # ------------------------------------------------------------------
+      # Bersihkan Gradle 9.6.1 yang diinstal oleh action di atas
+      # ------------------------------------------------------------------
+      - name: Remove Gradle 9.6.1 and install Gradle 7.6.2
+        run: |
+          # Hapus semua instalasi Gradle yang ada
+          sudo rm -rf /usr/share/gradle* /usr/local/lib/gradle* /opt/gradle* || true
+          sudo apt-get remove -y gradle || true
+
+          # Unduh Gradle 7.6.2
+          wget -q https://services.gradle.org/distributions/gradle-7.6.2-bin.zip
+          sudo unzip -q gradle-7.6.2-bin.zip -d /opt/gradle
+          rm gradle-7.6.2-bin.zip
+
+          # Atur environment
+          echo "GRADLE_HOME=/opt/gradle/gradle-7.6.2" >> $GITHUB_ENV
+          echo "/opt/gradle/gradle-7.6.2/bin" >> $GITHUB_PATH
+
+      - name: Verify Gradle version
+        run: |
+          gradle --version
+          # Pastikan versi yang terdeteksi adalah 7.6.2
+          gradle --version | grep "Gradle 7.6.2"
 
       - name: Install Cordova 13 globally
         run: npm install -g cordova@13.0.0
@@ -102,7 +123,7 @@ jobs:
             fi
           fi
 
-          # Suppress unsupported compileSdk warning
+          # Suppress warning
           GRADLE_PROPS="platforms/android/gradle.properties"
           if ! grep -q "android.suppressUnsupportedCompileSdk" "$GRADLE_PROPS"; then
             echo "android.suppressUnsupportedCompileSdk=34" >> "$GRADLE_PROPS"
