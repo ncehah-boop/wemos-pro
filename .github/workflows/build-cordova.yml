@@ -92,12 +92,12 @@ jobs:
           cordova plugin add cordova-plugin-file
           cordova plugin add cordova-plugin-vibration
           cordova plugin add cordova-plugin-advanced-http
-          cordova plugin add cordova-plugin-local-notifications
+          cordova plugin add cordova-plugin-local-notification   # tanpa 's'
 
       - name: Prepare project
         run: cordova prepare android
 
-      - name: Fix compileSdkVersion, manifest, network security, and gradle properties
+      - name: Fix compileSdkVersion, manifest, network security, and patch notification plugin
         run: |
           # 1. compileSdkVersion
           APP_BUILD="platforms/android/app/build.gradle"
@@ -139,6 +139,16 @@ jobs:
           fi
           if ! grep -q "android.enableJetifier" "$GRADLE_PROPS"; then
             echo "android.enableJetifier=true" >> "$GRADLE_PROPS"
+          fi
+
+          # 5. Patch plugin local-notification: compile -> implementation
+          NOTIF_GRADLE="platforms/android/cordova-plugin-local-notification/pro-localnotification.gradle"
+          if [ -f "$NOTIF_GRADLE" ]; then
+            echo "Memperbaiki file $NOTIF_GRADLE"
+            sed -i 's/compile(/implementation(/g' "$NOTIF_GRADLE"
+            cat "$NOTIF_GRADLE"
+          else
+            echo "File $NOTIF_GRADLE tidak ditemukan, plugin local-notification mungkin tidak terpasang."
           fi
 
       - name: Build Debug APK
