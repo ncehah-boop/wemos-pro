@@ -55,7 +55,9 @@ jobs:
         with:
           api-level: 34
           target: google_apis
-          build-tools: '33.0.2'   # ← tambahkan baris ini
+
+      - name: Install Android build tools 33.0.2 manually
+        run: yes | sdkmanager "build-tools;33.0.2"
 
       - name: Remove incompatible Gradle and install Gradle 7.6.2
         run: |
