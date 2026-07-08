@@ -8,7 +8,6 @@
         Wemos Development Team
     </author>
 
-    <!-- Platform: Android -->
     <platform name="android">
         <allow-intent href="market:*" />
         <preference name="android-minSdkVersion" value="26" />
@@ -17,7 +16,6 @@
         <preference name="GradlePluginGoogleServicesVersion" value="4.3.15" />
         <preference name="GradleVersion" value="7.6.2" />
 
-        <!-- Permissions untuk alarm dan notifikasi -->
         <permission name="android.permission.POST_NOTIFICATIONS" />
         <permission name="android.permission.DISABLE_KEYGUARD" />
         <permission name="android.permission.WAKE_LOCK" />
@@ -29,7 +27,6 @@
         <feature name="android.hardware.audio.pro" required="false" />
     </platform>
 
-    <!-- General Permissions -->
     <permission name="android.permission.INTERNET" />
     <permission name="android.permission.ACCESS_NETWORK_STATE" />
     <permission name="android.permission.CHANGE_NETWORK_STATE" />
@@ -38,7 +35,6 @@
     <permission name="android.permission.RECORD_AUDIO" />
     <permission name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
-    <!-- Cordova Preferences -->
     <preference name="orientation" value="portrait" />
     <preference name="Fullscreen" value="true" />
     <preference name="target-device" value="universal" />
@@ -50,7 +46,6 @@
     <preference name="AndroidXEnabled" value="true" />
     <preference name="androidx.core:core" value="1.+" />
 
-    <!-- Content Security Policy -->
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
     <allow-intent href="tel:*" />
@@ -63,7 +58,6 @@
     <allow-navigation href="https://*/*" />
     <allow-navigation href="data:*" />
 
-    <!-- Icons & Splash Screens -->
     <icon src="res/icon.png" />
     <splash src="res/splash.png" />
 </widget>
