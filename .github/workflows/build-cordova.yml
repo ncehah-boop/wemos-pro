@@ -53,7 +53,7 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
-          api-level: 33          # turunkan ke 33 untuk kompatibilitas
+          api-level: 33
           target: google_apis
 
       - name: Install Android build tools 33.0.2 manually
@@ -83,6 +83,7 @@ jobs:
           cordova platform rm android --nosave || true
           cordova platform add android@12.0.0
 
+      # Plugin inti yang aman
       - name: Add cordova-plugin-splashscreen
         run: cordova plugin add cordova-plugin-splashscreen
 
@@ -92,32 +93,14 @@ jobs:
       - name: Add cordova-plugin-device
         run: cordova plugin add cordova-plugin-device
 
-      - name: Add cordova-plugin-whitelist
-        run: cordova plugin add cordova-plugin-whitelist
-
-      - name: Add cordova-plugin-background-mode
-        run: cordova plugin add cordova-plugin-background-mode
-
       - name: Add cordova-plugin-network-information
         run: cordova plugin add cordova-plugin-network-information
-
-      - name: Add cordova-plugin-wifiwizard2
-        run: cordova plugin add cordova-plugin-wifiwizard2
 
       - name: Add cordova-plugin-media
         run: cordova plugin add cordova-plugin-media
 
       - name: Add cordova-plugin-file
         run: cordova plugin add cordova-plugin-file
-
-      - name: Add cordova-plugin-file-transfer
-        run: cordova plugin add cordova-plugin-file-transfer
-
-      - name: Add cordova-sqlite-storage
-        run: cordova plugin add cordova-sqlite-storage
-
-      - name: Add cordova-plugin-secure-storage
-        run: cordova plugin add cordova-plugin-secure-storage
 
       - name: Add cordova-plugin-vibration
         run: cordova plugin add cordova-plugin-vibration
