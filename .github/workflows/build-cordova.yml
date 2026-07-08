@@ -26,7 +26,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Pastikan resource icon & splash sudah ada sebelum langkah Cordova apa pun
       - name: Ensure icon and splash resources exist
         run: |
           mkdir -p res
@@ -82,9 +81,6 @@ jobs:
 
       - name: Add cordova-plugin-local-notification
         run: cordova plugin add cordova-plugin-local-notification --variable ANDROID_SUPPORT_V4_VERSION="27.+"
-
-      - name: Add cordova-plugin-wake-lock
-        run: cordova plugin add cordova-plugin-wake-lock
 
       - name: Add cordova-plugin-background-mode
         run: cordova plugin add cordova-plugin-background-mode
