@@ -31,11 +31,9 @@ jobs:
           mkdir -p res
           PNG_BASE64="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
           if [ ! -f res/icon.png ]; then
-            echo "Creating valid 1x1 PNG placeholder for icon.png"
             echo "$PNG_BASE64" | base64 -d > res/icon.png
           fi
           if [ ! -f res/splash.png ]; then
-            echo "Creating valid 1x1 PNG placeholder for splash.png"
             cp res/icon.png res/splash.png
           fi
 
@@ -49,32 +47,19 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
-          api-level: 33
+          api-level: 34
           target: google_apis
+          build-tools: '34.0.0'
 
-      - name: Install Android build tools 33.0.2 manually
-        run: yes | sdkmanager "build-tools;33.0.2"
+      - name: Install required build tools (additional)
+        run: yes | sdkmanager "build-tools;34.0.0" "platforms;android-34"
 
-      - name: Remove incompatible Gradle and install Gradle 7.6.2
-        run: |
-          sudo apt-get remove -y gradle || true
-          sudo rm -rf /usr/share/gradle* /usr/local/lib/gradle* || true
-          wget -q https://services.gradle.org/distributions/gradle-7.6.2-bin.zip
-          sudo unzip -q gradle-7.6.2-bin.zip -d /opt/gradle
-          rm gradle-7.6.2-bin.zip
-          echo "GRADLE_HOME=/opt/gradle/gradle-7.6.2" >> $GITHUB_ENV
-          echo "/opt/gradle/gradle-7.6.2/bin" >> $GITHUB_PATH
-
-      - name: Verify Gradle version
-        run: gradle --version
-
-      - name: Install Cordova globally
-        run: npm install -g cordova@12.0.0
+      - name: Install Cordova 13 globally
+        run: npm install -g cordova@13.0.0
 
       - name: Install Node dependencies (ignore scripts)
         run: npm install --ignore-scripts
@@ -84,77 +69,49 @@ jobs:
           cordova platform rm android --nosave || true
           cordova platform add android@12.0.0
 
-      # Plugin inti
-      - name: Add cordova-plugin-splashscreen
-        run: cordova plugin add cordova-plugin-splashscreen
-
-      - name: Add cordova-plugin-statusbar
-        run: cordova plugin add cordova-plugin-statusbar
-
-      - name: Add cordova-plugin-device
-        run: cordova plugin add cordova-plugin-device
-
-      - name: Add cordova-plugin-network-information
-        run: cordova plugin add cordova-plugin-network-information
-
-      - name: Add cordova-plugin-media
-        run: cordova plugin add cordova-plugin-media
-
-      - name: Add cordova-plugin-file
-        run: cordova plugin add cordova-plugin-file
-
-      - name: Add cordova-plugin-vibration
-        run: cordova plugin add cordova-plugin-vibration
-
-      # Plugin untuk notifikasi lokal + alarm (bisa membangunkan perangkat)
-      - name: Add local notifications plugin
-        run: cordova plugin add cordova-plugin-local-notifications
-
-      # Plugin untuk mempermudah HTTP request ke Wemos
-      - name: Add advanced HTTP plugin
-        run: cordova plugin add cordova-plugin-advanced-http
+      - name: Add plugins
+        run: |
+          cordova plugin add cordova-plugin-splashscreen
+          cordova plugin add cordova-plugin-statusbar
+          cordova plugin add cordova-plugin-device
+          cordova plugin add cordova-plugin-network-information
+          cordova plugin add cordova-plugin-media
+          cordova plugin add cordova-plugin-file
+          cordova plugin add cordova-plugin-vibration
+          cordova plugin add cordova-plugin-local-notification
+          cordova plugin add cordova-plugin-advanced-http
 
       - name: Prepare project
         run: cordova prepare android
 
-      - name: Fix compileSdkVersion, suppress warning, and allow cleartext traffic
+      - name: Fix Gradle and manifest for Android 34
         run: |
-          echo "=== Menambahkan compileSdkVersion 33 ke app/build.gradle ==="
+          # Pastikan compileSdkVersion 34
           APP_BUILD="platforms/android/app/build.gradle"
           if [ -f "$APP_BUILD" ]; then
             if ! grep -q "compileSdkVersion" "$APP_BUILD"; then
-              echo "Menambahkan compileSdkVersion 33"
-              sed -i "/apply plugin: 'com.android.application'/a android {\n    compileSdkVersion 33\n}" "$APP_BUILD"
-            else
-              echo "compileSdkVersion sudah ada."
+              sed -i "/apply plugin: 'com.android.application'/a android {\n    compileSdkVersion 34\n}" "$APP_BUILD"
             fi
           fi
 
-          echo "=== Menambahkan suppress warning ke gradle.properties ==="
-          GRADLE_PROPS="platforms/android/gradle.properties"
-          if [ ! -f "$GRADLE_PROPS" ]; then
-            touch "$GRADLE_PROPS"
-          fi
-          if ! grep -q "android.suppressUnsupportedCompileSdk" "$GRADLE_PROPS"; then
-            echo "android.suppressUnsupportedCompileSdk=33" >> "$GRADLE_PROPS"
-          fi
-
-          echo "=== Mengizinkan cleartext traffic (HTTP) untuk akses ke Wemos ==="
+          # Izinkan cleartext traffic (HTTP) ke Wemos
           MANIFEST="platforms/android/app/src/main/AndroidManifest.xml"
           if [ -f "$MANIFEST" ]; then
-            # Tambahkan android:usesCleartextTraffic="true" jika belum ada
-            if ! grep -q 'usesCleartextTraffic' "$MANIFEST"; then
+            if ! grep -q "usesCleartextTraffic" "$MANIFEST"; then
               sed -i 's/<application /<application android:usesCleartextTraffic="true" /' "$MANIFEST"
-              echo "Cleartext traffic diizinkan."
-            else
-              echo "Cleartext traffic sudah diizinkan."
             fi
+          fi
+
+          # Suppress unsupported compileSdk warning
+          GRADLE_PROPS="platforms/android/gradle.properties"
+          if ! grep -q "android.suppressUnsupportedCompileSdk" "$GRADLE_PROPS"; then
+            echo "android.suppressUnsupportedCompileSdk=34" >> "$GRADLE_PROPS"
           fi
 
       - name: Build Debug APK
         run: cordova build android --debug
 
-      - name: Build Release APK
+      - name: Build Release APK (optional)
         run: cordova build android --release
         continue-on-error: true
 
@@ -178,5 +135,4 @@ jobs:
         if: always()
         run: |
           echo "Build completed"
-          echo "APK artifacts ready for download"
           ls -la platforms/android/app/build/outputs/apk/ || true
