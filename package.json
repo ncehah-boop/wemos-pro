@@ -9,7 +9,6 @@
     "build:debug": "cordova build android --debug",
     "run": "cordova run android",
     "run:debug": "cordova run android --debug",
-    "prepare": "cordova prepare",
     "clean": "cordova clean",
     "check:requirements": "cordova requirements android",
     "sign:apk": "cd platforms/android && ./gradlew assembleRelease"
