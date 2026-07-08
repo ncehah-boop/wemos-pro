@@ -55,22 +55,8 @@ jobs:
           target: google_apis
           build-tools: '34.0.0'
 
-      - name: Install Android build tools 33.0.2 (retry if corrupt)
-        run: |
-          for i in 1 2 3; do
-            echo "Percobaan ke-$i untuk menginstal build-tools 33.0.2"
-            # Hapus folder dan cache sementara yang mungkin rusak
-            rm -rf $ANDROID_HOME/build-tools/33.0.2 $ANDROID_HOME/.temp
-            yes | sdkmanager "build-tools;33.0.2" && break
-            echo "Gagal, menunggu 10 detik sebelum mencoba lagi..."
-            sleep 10
-          done
-          # Verifikasi
-          if [ ! -d "$ANDROID_HOME/build-tools/33.0.2" ]; then
-            echo "Gagal menginstal build-tools 33.0.2 setelah 3 percobaan"
-            exit 1
-          fi
-          echo "Build tools 33.0.2 terinstal."
+      - name: Install Android build tools 33.0.2
+        run: yes | sdkmanager "build-tools;33.0.2"
 
       - name: Remove Gradle 9.6.1 and install Gradle 7.6.2
         run: |
@@ -96,7 +82,7 @@ jobs:
           cordova platform rm android --nosave || true
           cordova platform add android@12.0.0
 
-      - name: Add plugins
+      - name: Add plugins (tanpa local-notification)
         run: |
           cordova plugin add cordova-plugin-splashscreen
           cordova plugin add cordova-plugin-statusbar
@@ -106,63 +92,42 @@ jobs:
           cordova plugin add cordova-plugin-file
           cordova plugin add cordova-plugin-vibration
           cordova plugin add cordova-plugin-advanced-http
-          cordova plugin add cordova-plugin-local-notification
-
+          cordova plugin add cordova-plugin-firebase-messaging
+         
       - name: Prepare project
         run: cordova prepare android
 
-      - name: Fix compileSdkVersion, manifest, network security, and patch notification plugin
+      - name: Fix compileSdkVersion, cleartext traffic, dan suppress warning
         run: |
-          # 1. compileSdkVersion
           APP_BUILD="platforms/android/app/build.gradle"
           if [ -f "$APP_BUILD" ]; then
+            echo "File app/build.gradle ditemukan."
             if ! grep -q "compileSdkVersion" "$APP_BUILD"; then
+              echo "Menambahkan compileSdkVersion 34"
               sed -i "/apply plugin: 'com.android.application'/a android {\n    compileSdkVersion 34\n}" "$APP_BUILD"
+            else
+              echo "compileSdkVersion sudah ada."
             fi
+            echo "=== Isi app/build.gradle ==="
+            cat "$APP_BUILD"
+          else
+            echo "ERROR: File app/build.gradle tidak ditemukan!"
+            exit 1
           fi
 
-          # 2. AndroidManifest: cleartext + networkSecurityConfig (gunakan pemisah #)
           MANIFEST="platforms/android/app/src/main/AndroidManifest.xml"
           if [ -f "$MANIFEST" ]; then
             if ! grep -q "usesCleartextTraffic" "$MANIFEST"; then
-              sed -i 's#<application #<application android:usesCleartextTraffic="true" #' "$MANIFEST"
-            fi
-            if ! grep -q "networkSecurityConfig" "$MANIFEST"; then
-              sed -i 's#<application #<application android:networkSecurityConfig="@xml/network_security_config" #' "$MANIFEST"
+              echo "Mengizinkan cleartext traffic (HTTP)."
+              sed -i 's/<application /<application android:usesCleartextTraffic="true" /' "$MANIFEST"
+            else
+              echo "Cleartext traffic sudah diizinkan."
             fi
           fi
 
-          # 3. Buat network_security_config.xml
-          RES_XML="platforms/android/app/src/main/res/xml"
-          mkdir -p "$RES_XML"
-          cat > "$RES_XML/network_security_config.xml" <<EOF
-          <?xml version="1.0" encoding="utf-8"?>
-          <network-security-config>
-              <base-config cleartextTrafficPermitted="true">
-                  <trust-anchors>
-                      <certificates src="system" />
-                  </trust-anchors>
-              </base-config>
-          </network-security-config>
-          EOF
-
-          # 4. gradle.properties
           GRADLE_PROPS="platforms/android/gradle.properties"
           if ! grep -q "android.suppressUnsupportedCompileSdk" "$GRADLE_PROPS"; then
             echo "android.suppressUnsupportedCompileSdk=34" >> "$GRADLE_PROPS"
-          fi
-          if ! grep -q "android.enableJetifier" "$GRADLE_PROPS"; then
-            echo "android.enableJetifier=true" >> "$GRADLE_PROPS"
-          fi
-
-          # 5. Patch plugin local-notification: compile -> implementation (gunakan pemisah #)
-          NOTIF_GRADLE="platforms/android/cordova-plugin-local-notification/pro-localnotification.gradle"
-          if [ -f "$NOTIF_GRADLE" ]; then
-            echo "Memperbaiki file $NOTIF_GRADLE"
-            sed -i 's#compile(#implementation(#g' "$NOTIF_GRADLE"
-            cat "$NOTIF_GRADLE"
-          else
-            echo "File $NOTIF_GRADLE tidak ditemukan, plugin local-notification mungkin tidak terpasang."
           fi
 
       - name: Build Debug APK
