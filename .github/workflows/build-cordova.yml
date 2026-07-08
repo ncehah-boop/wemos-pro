@@ -29,7 +29,6 @@ jobs:
       - name: Ensure valid PNG icons and splash exist
         run: |
           mkdir -p res
-          # PNG 1x1 transparan dalam base64
           PNG_BASE64="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
           if [ ! -f res/icon.png ]; then
             echo "Creating valid 1x1 PNG placeholder for icon.png"
@@ -85,6 +84,7 @@ jobs:
           cordova platform rm android --nosave || true
           cordova platform add android@12.0.0
 
+      # Plugin inti
       - name: Add cordova-plugin-splashscreen
         run: cordova plugin add cordova-plugin-splashscreen
 
@@ -106,10 +106,18 @@ jobs:
       - name: Add cordova-plugin-vibration
         run: cordova plugin add cordova-plugin-vibration
 
+      # Plugin untuk notifikasi lokal + alarm (bisa membangunkan perangkat)
+      - name: Add local notifications plugin
+        run: cordova plugin add cordova-plugin-local-notifications
+
+      # Plugin untuk mempermudah HTTP request ke Wemos
+      - name: Add advanced HTTP plugin
+        run: cordova plugin add cordova-plugin-advanced-http
+
       - name: Prepare project
         run: cordova prepare android
 
-      - name: Fix compileSdkVersion and add suppress warning
+      - name: Fix compileSdkVersion, suppress warning, and allow cleartext traffic
         run: |
           echo "=== Menambahkan compileSdkVersion 33 ke app/build.gradle ==="
           APP_BUILD="platforms/android/app/build.gradle"
@@ -120,24 +128,28 @@ jobs:
             else
               echo "compileSdkVersion sudah ada."
             fi
-            cat "$APP_BUILD"
-          else
-            echo "File tidak ditemukan: $APP_BUILD"
           fi
 
-          echo "=== Menambahkan android.suppressUnsupportedCompileSdk=33 ke gradle.properties ==="
+          echo "=== Menambahkan suppress warning ke gradle.properties ==="
           GRADLE_PROPS="platforms/android/gradle.properties"
           if [ ! -f "$GRADLE_PROPS" ]; then
-            echo "Membuat gradle.properties"
             touch "$GRADLE_PROPS"
           fi
           if ! grep -q "android.suppressUnsupportedCompileSdk" "$GRADLE_PROPS"; then
             echo "android.suppressUnsupportedCompileSdk=33" >> "$GRADLE_PROPS"
-            echo "Properti suppress ditambahkan."
-          else
-            echo "Properti suppress sudah ada."
           fi
-          cat "$GRADLE_PROPS"
+
+          echo "=== Mengizinkan cleartext traffic (HTTP) untuk akses ke Wemos ==="
+          MANIFEST="platforms/android/app/src/main/AndroidManifest.xml"
+          if [ -f "$MANIFEST" ]; then
+            # Tambahkan android:usesCleartextTraffic="true" jika belum ada
+            if ! grep -q 'usesCleartextTraffic' "$MANIFEST"; then
+              sed -i 's/<application /<application android:usesCleartextTraffic="true" /' "$MANIFEST"
+              echo "Cleartext traffic diizinkan."
+            else
+              echo "Cleartext traffic sudah diizinkan."
+            fi
+          fi
 
       - name: Build Debug APK
         run: cordova build android --debug
