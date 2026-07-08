@@ -56,6 +56,24 @@ jobs:
           api-level: 34
           target: google_apis
 
+      - name: Remove incompatible Gradle and install Gradle 7.6.2
+        run: |
+          # Hapus Gradle yang terinstal (jika ada)
+          sudo apt-get remove -y gradle || true
+          sudo rm -rf /usr/share/gradle* /usr/local/lib/gradle* || true
+
+          # Unduh dan ekstrak Gradle 7.6.2 ke /opt/gradle
+          wget -q https://services.gradle.org/distributions/gradle-7.6.2-bin.zip
+          sudo unzip -q gradle-7.6.2-bin.zip -d /opt/gradle
+          rm gradle-7.6.2-bin.zip
+
+          # Set environment variables
+          echo "GRADLE_HOME=/opt/gradle/gradle-7.6.2" >> $GITHUB_ENV
+          echo "/opt/gradle/gradle-7.6.2/bin" >> $GITHUB_PATH
+
+      - name: Verify Gradle version
+        run: gradle --version
+
       - name: Install Cordova globally
         run: npm install -g cordova@12.0.0
 
