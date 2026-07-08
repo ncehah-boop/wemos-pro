@@ -55,23 +55,50 @@ jobs:
           cordova platform rm android --nosave || true
           cordova platform add android@12.0.0
 
-      - name: Add Cordova plugins (manual)
-        run: |
-          cordova plugin add cordova-plugin-splashscreen
-          cordova plugin add cordova-plugin-statusbar
-          cordova plugin add cordova-plugin-device
-          cordova plugin add cordova-plugin-whitelist
-          cordova plugin add cordova-plugin-local-notification --variable ANDROID_SUPPORT_V4_VERSION="27.+"
-          cordova plugin add cordova-plugin-wakelock
-          cordova plugin add cordova-plugin-background-mode
-          cordova plugin add cordova-plugin-network-information
-          cordova plugin add cordova-plugin-wifiwizard2
-          cordova plugin add cordova-plugin-media
-          cordova plugin add cordova-plugin-file
-          cordova plugin add cordova-plugin-file-transfer
-          cordova plugin add cordova-sqlite-storage
-          cordova plugin add cordova-plugin-secure-storage
-          cordova plugin add cordova-plugin-vibration
+      - name: Add splashscreen plugin
+        run: cordova plugin add cordova-plugin-splashscreen
+
+      - name: Add statusbar plugin
+        run: cordova plugin add cordova-plugin-statusbar
+
+      - name: Add device plugin
+        run: cordova plugin add cordova-plugin-device
+
+      - name: Add whitelist plugin
+        run: cordova plugin add cordova-plugin-whitelist
+
+      - name: Add local-notification plugin
+        run: cordova plugin add cordova-plugin-local-notification --variable ANDROID_SUPPORT_V4_VERSION="27.+"
+
+      - name: Add wakelock plugin
+        run: cordova plugin add cordova-plugin-wakelock
+
+      - name: Add background-mode plugin
+        run: cordova plugin add cordova-plugin-background-mode
+
+      - name: Add network-information plugin
+        run: cordova plugin add cordova-plugin-network-information
+
+      - name: Add wifiwizard2 plugin
+        run: cordova plugin add cordova-plugin-wifiwizard2
+
+      - name: Add media plugin
+        run: cordova plugin add cordova-plugin-media
+
+      - name: Add file plugin
+        run: cordova plugin add cordova-plugin-file
+
+      - name: Add file-transfer plugin
+        run: cordova plugin add cordova-plugin-file-transfer
+
+      - name: Add sqlite-storage plugin
+        run: cordova plugin add cordova-sqlite-storage
+
+      - name: Add secure-storage plugin
+        run: cordova plugin add cordova-plugin-secure-storage
+
+      - name: Add vibration plugin
+        run: cordova plugin add cordova-plugin-vibration
 
       - name: Prepare project (copy www & resources)
         run: cordova prepare android
