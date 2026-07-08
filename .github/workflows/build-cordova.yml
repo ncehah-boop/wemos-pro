@@ -55,8 +55,22 @@ jobs:
           target: google_apis
           build-tools: '34.0.0'
 
-      - name: Install Android build tools 33.0.2
-        run: yes | sdkmanager "build-tools;33.0.2"
+      - name: Install Android build tools 33.0.2 (retry if corrupt)
+        run: |
+          for i in 1 2 3; do
+            echo "Percobaan ke-$i untuk menginstal build-tools 33.0.2"
+            # Hapus folder dan cache sementara yang mungkin rusak
+            rm -rf $ANDROID_HOME/build-tools/33.0.2 $ANDROID_HOME/.temp
+            yes | sdkmanager "build-tools;33.0.2" && break
+            echo "Gagal, menunggu 10 detik sebelum mencoba lagi..."
+            sleep 10
+          done
+          # Verifikasi
+          if [ ! -d "$ANDROID_HOME/build-tools/33.0.2" ]; then
+            echo "Gagal menginstal build-tools 33.0.2 setelah 3 percobaan"
+            exit 1
+          fi
+          echo "Build tools 33.0.2 terinstal."
 
       - name: Remove Gradle 9.6.1 and install Gradle 7.6.2
         run: |
