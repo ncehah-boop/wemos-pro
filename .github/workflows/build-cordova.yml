@@ -99,13 +99,13 @@ jobs:
           retention-days: 30
           
       - name: Upload Release APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4   # <-- perbaikan 1
         if: always()
         with:
           name: wemos-notification-app-release.apk
           path: platforms/android/app/build/outputs/apk/release/app-release.apk
           retention-days: 30
-          continue-on-error: true
+          # continue-on-error dihapus dari sini   <-- perbaikan 2
           
       - name: Build Report
         if: always()
