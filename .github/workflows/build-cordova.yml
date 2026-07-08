@@ -55,7 +55,6 @@ jobs:
           target: google_apis
           build-tools: '34.0.0'
 
-      # Instal build tools 33.0.2 yang dibutuhkan Cordova android 12
       - name: Install Android build tools 33.0.2
         run: yes | sdkmanager "build-tools;33.0.2"
 
@@ -83,7 +82,7 @@ jobs:
           cordova platform rm android --nosave || true
           cordova platform add android@12.0.0
 
-      - name: Add plugins
+      - name: Add plugins (tanpa local-notification)
         run: |
           cordova plugin add cordova-plugin-splashscreen
           cordova plugin add cordova-plugin-statusbar
@@ -92,31 +91,39 @@ jobs:
           cordova plugin add cordova-plugin-media
           cordova plugin add cordova-plugin-file
           cordova plugin add cordova-plugin-vibration
-          cordova plugin add cordova-plugin-local-notification
           cordova plugin add cordova-plugin-advanced-http
 
       - name: Prepare project
         run: cordova prepare android
 
-      - name: Fix Gradle and manifest for Android 34
+      - name: Fix compileSdkVersion, cleartext traffic, dan suppress warning
         run: |
-          # Pastikan compileSdkVersion 34
           APP_BUILD="platforms/android/app/build.gradle"
           if [ -f "$APP_BUILD" ]; then
+            echo "File app/build.gradle ditemukan."
             if ! grep -q "compileSdkVersion" "$APP_BUILD"; then
+              echo "Menambahkan compileSdkVersion 34"
               sed -i "/apply plugin: 'com.android.application'/a android {\n    compileSdkVersion 34\n}" "$APP_BUILD"
+            else
+              echo "compileSdkVersion sudah ada."
             fi
+            echo "=== Isi app/build.gradle ==="
+            cat "$APP_BUILD"
+          else
+            echo "ERROR: File app/build.gradle tidak ditemukan!"
+            exit 1
           fi
 
-          # Izinkan cleartext traffic (HTTP)
           MANIFEST="platforms/android/app/src/main/AndroidManifest.xml"
           if [ -f "$MANIFEST" ]; then
             if ! grep -q "usesCleartextTraffic" "$MANIFEST"; then
+              echo "Mengizinkan cleartext traffic (HTTP)."
               sed -i 's/<application /<application android:usesCleartextTraffic="true" /' "$MANIFEST"
+            else
+              echo "Cleartext traffic sudah diizinkan."
             fi
           fi
 
-          # Suppress warning
           GRADLE_PROPS="platforms/android/gradle.properties"
           if ! grep -q "android.suppressUnsupportedCompileSdk" "$GRADLE_PROPS"; then
             echo "android.suppressUnsupportedCompileSdk=34" >> "$GRADLE_PROPS"
