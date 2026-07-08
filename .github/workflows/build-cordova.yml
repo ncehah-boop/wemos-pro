@@ -53,7 +53,7 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
-          api-level: 34
+          api-level: 33          # turunkan ke 33 untuk kompatibilitas
           target: google_apis
 
       - name: Install Android build tools 33.0.2 manually
@@ -95,9 +95,6 @@ jobs:
       - name: Add cordova-plugin-whitelist
         run: cordova plugin add cordova-plugin-whitelist
 
-      - name: Add cordova-plugin-local-notification
-        run: cordova plugin add cordova-plugin-local-notification --variable ANDROID_SUPPORT_V4_VERSION="27.+"
-
       - name: Add cordova-plugin-background-mode
         run: cordova plugin add cordova-plugin-background-mode
 
@@ -128,46 +125,35 @@ jobs:
       - name: Prepare project
         run: cordova prepare android
 
-      - name: Copy custom Java sources and resources
+      - name: Fix compileSdkVersion and add suppress warning
         run: |
-          mkdir -p platforms/android/app/src/main/java/com/wemos/notification
-          cp -r app/src/main/java/com/wemos/notification/*.java platforms/android/app/src/main/java/com/wemos/notification/ 2>/dev/null || true
-          cp -r app/src/main/res/values/*.xml platforms/android/app/src/main/res/values/ 2>/dev/null || true
-          cp -r app/src/main/res/xml/*.xml platforms/android/app/src/main/res/xml/ 2>/dev/null || true
-          cp app/src/main/AndroidManifest.xml platforms/android/app/src/main/AndroidManifest.xml 2>/dev/null || true
-          cp proguard-rules.pro platforms/android/app/ 2>/dev/null || true
-          echo "Custom sources copied successfully."
-
-      - name: Fix Gradle issues (compile -> implementation, compileSdkVersion)
-        run: |
-          echo "=== Memperbaiki plugin local-notification ==="
-          FILE="platforms/android/cordova-plugin-local-notification/pro-localnotification.gradle"
-          if [ -f "$FILE" ]; then
-            echo "File ditemukan. Isi sebelum perbaikan:"
-            cat "$FILE"
-            # Ganti semua 'compile' dengan 'implementation' (hati-hati hanya yang diawali spasi atau tab)
-            sed -i 's/^\([ \t]*\)compile /\1implementation /g' "$FILE"
-            echo "Isi setelah perbaikan:"
-            cat "$FILE"
-          else
-            echo "File tidak ditemukan: $FILE"
-          fi
-
-          echo "=== Menambahkan compileSdkVersion ke app/build.gradle ==="
+          echo "=== Menambahkan compileSdkVersion 33 ke app/build.gradle ==="
           APP_BUILD="platforms/android/app/build.gradle"
           if [ -f "$APP_BUILD" ]; then
             if ! grep -q "compileSdkVersion" "$APP_BUILD"; then
-              echo "compileSdkVersion belum ada, menambahkannya..."
-              # Tambahkan setelah baris 'apply plugin: 'com.android.application''
-              sed -i "/apply plugin: 'com.android.application'/a android {\n    compileSdkVersion 34\n}" "$APP_BUILD"
-              echo "Isi app/build.gradle sekarang:"
-              cat "$APP_BUILD"
+              echo "Menambahkan compileSdkVersion 33"
+              sed -i "/apply plugin: 'com.android.application'/a android {\n    compileSdkVersion 33\n}" "$APP_BUILD"
             else
               echo "compileSdkVersion sudah ada."
             fi
+            cat "$APP_BUILD"
           else
             echo "File tidak ditemukan: $APP_BUILD"
           fi
+
+          echo "=== Menambahkan android.suppressUnsupportedCompileSdk=33 ke gradle.properties ==="
+          GRADLE_PROPS="platforms/android/gradle.properties"
+          if [ ! -f "$GRADLE_PROPS" ]; then
+            echo "Membuat gradle.properties"
+            touch "$GRADLE_PROPS"
+          fi
+          if ! grep -q "android.suppressUnsupportedCompileSdk" "$GRADLE_PROPS"; then
+            echo "android.suppressUnsupportedCompileSdk=33" >> "$GRADLE_PROPS"
+            echo "Properti suppress ditambahkan."
+          else
+            echo "Properti suppress sudah ada."
+          fi
+          cat "$GRADLE_PROPS"
 
       - name: Build Debug APK
         run: cordova build android --debug
